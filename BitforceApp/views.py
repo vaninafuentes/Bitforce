@@ -9,20 +9,20 @@ class GymUserView(viewsets.ModelViewSet):
     queryset = GymUser.objects.all()
 
 class SucursalView(viewsets.ModelViewSet):
-    serializer_class = SucursalSerializer
-    queryset = Sucursal.objects.all()
+    serializer_class = BranchSerializer
+    queryset = Branch.objects.all()
 
 class CoachView(viewsets.ModelViewSet):
     serializer_class = CoachSerializer
     queryset = Coach.objects.all()
 
 class ActividadView(viewsets.ModelViewSet):
-    serializer_class = ActividadSerializer
-    queryset = Actividad.objects.all()
+    serializer_class = ActivitySerializer
+    queryset = Activity.objects.all()
 
 class TurnoView(viewsets.ModelViewSet):
-    serializer_class = TurnoSerializer
-    queryset = Turno.objects.all()
+    serializer_class = ShiftSerializer
+    queryset = Shift.objects.all()
 
 
 

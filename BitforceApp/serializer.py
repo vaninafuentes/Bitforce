@@ -6,9 +6,9 @@ class GymUserSerializer(serializers.ModelSerializer):
         model = GymUser
         fields = '__all__'
 
-class SucursalSerializer(serializers.ModelSerializer):
+class BranchSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Sucursal
+        model = Branch
         fields = '__all__'
 
 class CoachSerializer(serializers.ModelSerializer):
@@ -16,12 +16,12 @@ class CoachSerializer(serializers.ModelSerializer):
         model = Coach
         fields = '__all__'
 
-class ActividadSerializer(serializers.ModelSerializer):
+class ActivitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Actividad
+        model = Activity
         fields = '__all__'
 
-class TurnoSerializer(serializers.ModelSerializer):
+class ShiftSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Turno
+        model = Shift
         fields = '__all__'

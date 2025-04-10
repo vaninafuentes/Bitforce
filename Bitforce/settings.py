@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'BitforceApp',
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
+    
 ]
 
 MIDDLEWARE = [
@@ -136,4 +138,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = []
 
+REST_FRAMEWORK = {
+     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+ }
 
