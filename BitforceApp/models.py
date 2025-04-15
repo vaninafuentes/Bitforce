@@ -5,8 +5,9 @@ from django.db import models
 class GymUser(models.Model):
     nombre = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    #TODO;añadir contraseña
 
-class Sucursal(models.Model):
+class Branch(models.Model):
     nombre = models.CharField(max_length=100)
     direccion = models.CharField(max_length=255)
 
@@ -15,14 +16,14 @@ class Coach(models.Model):
     especialidad = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
 
-class Actividad(models.Model):
+class Activity(models.Model):
     nombre = models.CharField(max_length=100)
     duracion = models.IntegerField(help_text="Duración en minutos")
     capacidad_maxima = models.IntegerField()
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE)
 
-class Turno(models.Model):
+class Shift(models.Model):
     fecha_hora = models.DateTimeField()
     gymuser = models.ForeignKey(GymUser, on_delete=models.CASCADE)
-    actividad = models.ForeignKey(Actividad, on_delete=models.CASCADE)
-    sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE)
+    actividad = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    sucursal = models.ForeignKey(Branch, on_delete=models.CASCADE)
