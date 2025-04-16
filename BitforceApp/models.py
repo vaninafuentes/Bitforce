@@ -1,11 +1,9 @@
 from django.db import models
+from AccountAdmin.models import GymUser
+
 
 # Create your models here.
 
-class GymUser(models.Model):
-    nombre = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    #TODO;añadir contraseña
 
 class Branch(models.Model):
     nombre = models.CharField(max_length=100)
@@ -27,3 +25,4 @@ class Shift(models.Model):
     gymuser = models.ForeignKey(GymUser, on_delete=models.CASCADE)
     actividad = models.ForeignKey(Activity, on_delete=models.CASCADE)
     sucursal = models.ForeignKey(Branch, on_delete=models.CASCADE)
+
