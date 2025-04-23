@@ -5,7 +5,6 @@ from .serializer import *
 from .models import *
 
 
-
 class ActividadView(viewsets.ModelViewSet):
     serializer_class = ActivitySerializer
     queryset = Activity.objects.all()

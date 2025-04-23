@@ -1,12 +1,19 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-class GymUser(models.Model):
-    nombre = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    address = models.TextField()
-    phone = models.CharField(max_length=20, null =True, blank=True)
+class GymUser(AbstractUser):
 
-    def __str__(self):
-        return self.nombre
+    ROLES = [
+        ('admin', 'Administrador'),
+        ('limMerchant', 'Limitado'),
+    ]
+    role = models.CharField(max_length=20, choices=ROLES, default='limMerchant')
+    Branch = models.CharField(max_length=100, default='')  
+    email= models.EmailField(unique=True)
+    password = models.CharField(max_length=100, default='default_password') 
 
-# Create your models here.
+
+    def _str_(self):
+        return self.email
+# Create your models here.
+

@@ -6,6 +6,9 @@ router = routers.DefaultRouter()
 router.register(r'GymUser', views.GymUserViewSet, basename='GymUser')
 
 urlpatterns = [
-    path('AccountAdmin/', include(router.urls)),
+    path('', include(router.urls)),
+    path('login/', views.LoginView.as_view(), name='login'),  # Ruta para LoginView
+    path('logout/', views.LogoutView.as_view(), name='logout'),  # Ruta para LogoutView
 ]
+
 
