@@ -9,7 +9,6 @@ class GymUser(AbstractUser):
     ]
     role = models.CharField(max_length=20, choices=ROLES, default='limMerchant')
     Branch = models.CharField(max_length=100, default='')  
-    email= models.EmailField(unique=True)
 
 
     def _str_(self):
