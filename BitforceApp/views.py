@@ -1,8 +1,11 @@
 from django.shortcuts import render
-
-from rest_framework import viewsets
+from rest_framework import viewsets #agregar permissions
+#from modeles import Activity, Branch, Coach, Shift
+#from serializer import ActivitySerializer, BranchSerializer, CoachSerializer, ShiftSerializer
+#from django.db.models import 0
 from .serializer import *
 from .models import *
+
 
 
 class ActividadView(viewsets.ModelViewSet):

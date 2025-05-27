@@ -14,10 +14,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterField(
             model_name='shift',
-            name='gymuser',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='AccountAdmin.gymuser'),
-        ),
-        migrations.DeleteModel(
             name='GymUser',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='AccountAdmin.GymUser'),
         ),
     ]

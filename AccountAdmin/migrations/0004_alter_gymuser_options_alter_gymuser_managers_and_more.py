@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='gymuser',
-            options={'verbose_name': 'user', 'verbose_name_plural': 'users'},
+            options={'verbose_name': 'gymuser', 'verbose_name_plural': 'gymusers'},
         ),
         migrations.AlterModelManagers(
             name='gymuser',
@@ -37,22 +37,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='gymuser',
             name='groups',
-            field=models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups'),
+            field=models.ManyToManyField(blank=True, help_text='The groups this gymuser belongs to. A gymuser will get all permissions granted to each of their groups.', related_name='gymuser_set', related_query_name='gymuser', to='auth.group', verbose_name='groups'),
         ),
         migrations.AddField(
             model_name='gymuser',
             name='is_active',
-            field=models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active'),
+            field=models.BooleanField(default=True, help_text='Designates whether this gymuser should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active'),
         ),
         migrations.AddField(
             model_name='gymuser',
             name='is_staff',
-            field=models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status'),
+            field=models.BooleanField(default=False, help_text='Designates whether the gymuser can log into this admin site.', verbose_name='staff status'),
         ),
         migrations.AddField(
             model_name='gymuser',
-            name='is_superuser',
-            field=models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status'),
+            name='is_supergymuser',
+            field=models.BooleanField(default=False, help_text='Designates that this gymuser has all permissions without explicitly assigning them.', verbose_name='supergymuser status'),
         ),
         migrations.AddField(
             model_name='gymuser',
@@ -66,13 +66,13 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='gymuser',
-            name='user_permissions',
-            field=models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions'),
+            name='gymuser_permissions',
+            field=models.ManyToManyField(blank=True, help_text='Specific permissions for this gymuser.', related_name='gymuser_set', related_query_name='gymuser', to='auth.permission', verbose_name='gymuser permissions'),
         ),
         migrations.AddField(
             model_name='gymuser',
-            name='username',
-            field=models.CharField(default=1, error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.', max_length=150, unique=True, validators=[django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='username'),
+            name='gymusername',
+            field=models.CharField(default=1, error_messages={'unique': 'A gymuser with that gymusername already exists.'}, help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.', max_length=150, unique=True, validators=[django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='gymusername'),
             preserve_default=False,
         ),
     ]
