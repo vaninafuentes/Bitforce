@@ -37,12 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles', 
+    'AccountAdmin',
     'BitforceApp',
     'rest_framework',
     'corsheaders',
-    'drf_spectacular',
-    'AccountAdmin',
-    
+    'drf_spectacular',    
 ]
 
 MIDDLEWARE = [
@@ -83,8 +82,8 @@ WSGI_APPLICATION = 'Bitforce.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bitforce',  
-        'USER': 'root',         
+        'NAME': 'bitforce_3',  
+        'USER': 'bitforce_user',         
         'PASSWORD': '1234',  
         'HOST': 'localhost',          
         'PORT': '3306',               

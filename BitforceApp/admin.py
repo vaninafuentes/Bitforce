@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import GymUser, Coach, Activity, Shift
-
+from .models import Coach, Activity, Shift
+from AccountAdmin.models import GymUser
 
 
 admin.site.register(GymUser)

@@ -11,6 +11,9 @@ urlpatterns = [
     path('', include(router.urls)),
     path('login/', views.LoginView.as_view(), name='login'),  # Ruta para LoginView #comentar porque el profe lo borra
     path('logout/', views.LogoutView.as_view(), name='logout'),  # Ruta para LogoutView
+    #TODO crear un superusuario y este usuario crea un admin que va a crear a los clientes 
+    #TODO crear un endpoint para crear usuarios del tipo cliente, validar que solo un administrador pueda acceder a este endpoint
+     
 ]
 
 
