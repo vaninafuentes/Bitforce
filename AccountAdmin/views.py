@@ -1,22 +1,21 @@
 from django.shortcuts import render
+from django.contrib.auth import authenticate, login, logout
 
+from rest_framework import generics, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth import authenticate, login, logout
-from .serializer import * 
-from rest_framework.response import *
-from rest_framework import viewsets
-from .models import *
-from AccountAdmin.permissions import IsAdminGymUser
-#from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
+from .serializer import (
+    ClientUserCreateSerializer,
+    GymUserSerializer
+)
+from .permissions import IsSystemAdmin, IsAdminGymUser
+from .models import GymUser
 
 class GymUserView(viewsets.ModelViewSet):
     queryset = GymUser.objects.all()
-    permission_classes = [AllowAny]  # Establece explícitamente los permisos
-        #permission_classes = [IsAuthenticated, IsAdminGymUser]
+    permission_classes = [IsAuthenticated, IsAdminGymUser]
     serializer_class = GymUserSerializer
 
     def perform_create(self, serializer):
@@ -41,7 +40,6 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
 
     def post(self, request):
-        # ...existing code...
         username = request.data.get("username")
         password = request.data.get("password")
         print(username, password)
@@ -56,28 +54,33 @@ class LoginView(APIView):
             }, status=status.HTTP_200_OK)
         return Response({"error": "Credenciales inválidas"}, status=status.HTTP_400_BAD_REQUEST)
 
-# class LoginView(APIView):
-#     def post(self, request):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-#         print(username, password)
-#         user = authenticate(request, username=username, password=password)
-#         if user is not None:
-#             login(request, user)
-#             return Response({
-#                 "message": "Login exitoso",
-#                 "username": user.username,
-#                 "rol": user.rol,
-#                 "email": user.email,
-
-#             }, status=status.HTTP_200_OK)
-#         return Response({"error": "Credenciales inválidas"}, status=status.HTTP_400_BAD_REQUEST)
-
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        # Retorna un mensaje indicando que esta es la vista de logout
+        return Response({
+            "message": "Utiliza el método POST para cerrar sesión",
+            "format": {
+                "username": "tu_usuario"
+            }
+        }, status=status.HTTP_200_OK)
+
     def post(self, request):
-        logout(request)
-        return Response({"message": "Logout exitoso"}, status=status.HTTP_200_OK)
+        try:
+            logout(request)
+            return Response({
+                "message": "Sesión cerrada exitosamente",
+                "status": "Desconectado"
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": "Error al cerrar sesión",
+                "details": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+class ClientUserCreateView(generics.CreateAPIView):
+    serializer_class = ClientUserCreateSerializer
+    permission_classes = [IsAuthenticated, IsSystemAdmin]
 
 

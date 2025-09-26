@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Coach, Activity, Shift
-from AccountAdmin.models import GymUser
+from .models import Coach, Activity, Shift, Branch
 
 
-admin.site.register(GymUser)
+
+admin.site.register(Branch)
 admin.site.register(Coach)
 admin.site.register(Activity)
 admin.site.register(Shift)
