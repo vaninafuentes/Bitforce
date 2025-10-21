@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('login/', views.LoginView.as_view(), name='login'),  
-    path('logout/', views.LogoutView.as_view(), name='logout'),  
+    path('logout/', views.LogoutView.as_view(), name='logout'), 
+    path('api-auth/', include('rest_framework.urls')), 
     path('', include('AccountAdmin.urls')),   
 ]
