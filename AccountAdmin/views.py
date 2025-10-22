@@ -5,6 +5,9 @@ from rest_framework import generics, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import status, permissions
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 from .serializer import (
     ClientUserCreateSerializer,
@@ -12,6 +15,33 @@ from .serializer import (
 )
 from .permissions import IsSystemAdmin, IsAdminGymUser
 from .models import GymUser
+
+class LogoutJWTView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        refresh = request.data.get("refresh")
+        if not refresh:
+            return Response({"detail": "refresh token requerido"}, status=400)
+        try:
+            token = RefreshToken(refresh)
+            token.blacklist()
+        except TokenError:
+            return Response({"detail": "refresh inválido o ya revocado"}, status=400)
+        return Response({"detail": "logout ok"}, status=205)
+
+class MeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        u = request.user
+        return Response({
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "rol": getattr(u, "rol", None),
+            "is_staff": u.is_staff,
+            "is_superuser": u.is_superuser,
+        })
 
 class GymUserView(viewsets.ModelViewSet):
     queryset = GymUser.objects.all()
@@ -24,61 +54,7 @@ class GymUserView(viewsets.ModelViewSet):
         if password:
             instance.set_password(password)
             instance.save() #borrar despues 
-
-class LoginView(APIView):
-    authentication_classes = []  # Deshabilita la autenticación para esta vista
-    permission_classes = []      # Deshabilita los permisos para esta vista
-    
-    def get(self, request):
-        # Retorna un mensaje indicando que esta es la vista de login
-        return Response({
-            "message": "Utiliza el método POST para iniciar sesión",
-            "format": {
-                "username": "tu_usuario",
-                "password": "tu_contraseña"
-            }
-        }, status=status.HTTP_200_OK)
-
-    def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        print(username, password)
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return Response({
-                "message": "Login exitoso",
-                "username": user.username,
-                "rol": user.rol,
-                "email": user.email,
-            }, status=status.HTTP_200_OK)
-        return Response({"error": "Credenciales inválidas"}, status=status.HTTP_400_BAD_REQUEST)
-
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # Retorna un mensaje indicando que esta es la vista de logout
-        return Response({
-            "message": "Utiliza el método POST para cerrar sesión",
-            "format": {
-                "username": "tu_usuario"
-            }
-        }, status=status.HTTP_200_OK)
-
-    def post(self, request):
-        try:
-            logout(request)
-            return Response({
-                "message": "Sesión cerrada exitosamente",
-                "status": "Desconectado"
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({
-                "error": "Error al cerrar sesión",
-                "details": str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
-
+            
 class ClientUserCreateView(generics.CreateAPIView):
     serializer_class = ClientUserCreateSerializer
     permission_classes = [IsAuthenticated, IsSystemAdmin]

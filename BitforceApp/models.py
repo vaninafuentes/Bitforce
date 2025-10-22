@@ -60,6 +60,11 @@ class ClaseProgramada(models.Model):
     def __str__(self):
         return f"{self.actividad} @ {self.sucursal} [{self.inicio}]"
 
+    def clean(self):
+        super().clean()
+        if self.inicio and self.inicio <= timezone.now():
+            raise ValidationError({"inicio": "No podés programar clases en el pasado."})
+
     @property
     def fin(self):
         return self.inicio + timedelta(minutes=self.actividad.duracion)

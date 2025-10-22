@@ -59,6 +59,12 @@ class ClaseProgramadaView(viewsets.ModelViewSet):
         if self.request.method in permissions.SAFE_METHODS:
             return [permissions.IsAuthenticated()]
         return [permissions.IsAuthenticated(), IsSystemAdmin()]
+    
+    def perform_create(self, serializer):
+        obj = serializer.save()
+        # seguridad extra (por si algo raro pasa)
+        if obj.inicio <= timezone.now():
+            raise ValidationError({"inicio": "No podés programar clases en el pasado."})
 
 # --- Shifts (reservas) - sólo lectura desde API ---
 class ShiftView(viewsets.ReadOnlyModelViewSet):
