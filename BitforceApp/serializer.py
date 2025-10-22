@@ -108,6 +108,23 @@ class ClaseProgramadaSerializer(serializers.ModelSerializer):
             data["capacidad"] = data["actividad"].capacidad_maxima
         return data
 
+    def validate(self, data):
+        """
+        - No permitir programar en el pasado (create/update)
+        - Si no viene 'capacidad', usar por defecto la de la actividad
+        """
+        # obtener el inicio de 'data' o, en update parcial, del instance
+        inicio = data.get("inicio", getattr(self.instance, "inicio", None))
+        if inicio and inicio <= timezone.now():
+            raise serializers.ValidationError({"inicio": "No podés programar clases en el pasado."})
+
+        # capacidad por defecto desde Activity
+        if self.instance is None and not data.get("capacidad"):
+            actividad = data.get("actividad")
+            if actividad:
+                data["capacidad"] = actividad.capacidad_maxima
+
+        return data
 
 # -------- Shift (lectura) --------
 class ShiftSerializer(serializers.ModelSerializer):
