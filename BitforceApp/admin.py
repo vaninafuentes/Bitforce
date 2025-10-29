@@ -1,6 +1,6 @@
 # BitforceApp/admin.py
 from django.contrib import admin
-from .models import Branch, Coach, Activity, ClaseProgramada, Shift, Booking
+from .models import Branch, Coach, Activity, ClaseProgramada, Booking
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):

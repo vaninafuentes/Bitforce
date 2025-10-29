@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 from . import views
 from rest_framework.routers import DefaultRouter
-from .views import SucursalView, ActividadView, CoachView,ReservarPorSlotView, ClaseProgramadaView, BookingView, ReservarSlotBookingView
+from .views import SucursalView, ActividadView, CoachView, ClaseProgramadaView, BookingView, ReservarSlotBookingView, AdminCreateBookingView
 
 router = routers.DefaultRouter()
 router.register(r'branch', views.SucursalView, basename='branch')
@@ -14,7 +14,8 @@ router.register(r'booking', views.BookingView, basename='booking')
 urlpatterns = [
     *router.urls,
     path('bookings/reservar/', ReservarSlotBookingView.as_view(), name='booking-reservar'),
-    path('BitforceApp/model/', include(router.urls)),
+    path('bookings/admin_create/', AdminCreateBookingView.as_view(), name='booking-admin-create'),
+    path('admin/bookings/create/', AdminCreateBookingView.as_view(), name='admin-booking-create'),
 ]
 
 

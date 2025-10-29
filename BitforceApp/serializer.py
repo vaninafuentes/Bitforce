@@ -4,8 +4,34 @@ from rest_framework.validators import UniqueTogetherValidator
 from django.utils import timezone
 from datetime import timedelta
 from zoneinfo import ZoneInfo
+from AccountAdmin.models import GymUser
 
-from .models import Branch, Activity, Coach, ClaseProgramada, Shift, Booking
+from .models import Branch, Activity, Coach, ClaseProgramada, Booking
+from .models import ClaseProgramada, Booking
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+# ==== NUEVO: serializer para crear reservas como admin ====
+class AdminReserveSerializer(serializers.Serializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    slot = serializers.PrimaryKeyRelatedField(queryset=ClaseProgramada.objects.filter(activo=True))
+
+    def validate(self, data):
+        """
+        Reglas:
+          - si la reserva es manual (admin), por default permitimos aun si pasó el cutoff.
+          - sí validamos cupo y duplicados.
+        """
+        slot = data["slot"]
+        # cupo
+        actuales = Booking.objects.filter(slot=slot).count()
+        if actuales >= slot.capacidad:
+            raise serializers.ValidationError("Sin cupos disponibles.")
+        # duplicado para ese user
+        if Booking.objects.filter(slot=slot, user=data["user"]).exists():
+            raise serializers.ValidationError("Ese usuario ya tiene reserva en ese horario.")
+        return data 
 
 # ====== TZ local ======
 LOCAL_TZ = ZoneInfo("America/Argentina/Mendoza")
@@ -15,14 +41,14 @@ class LocalAwareDateTimeField(serializers.DateTimeField):
     """Acepta formatos simples y, si viene sin tz, asume America/Argentina/Mendoza."""
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("input_formats", [
-            "%Y-%m-%d %H:%M",        # 2025-12-01 20:00
-            "%Y-%m-%d %H:%M:%S",     # 2025-12-01 20:00:00
-            "%Y-%m-%dT%H:%M",        # 2025-12-01T20:00
-            "%Y-%m-%dT%H:%M:%S",     # 2025-12-01T20:00:00
-            "%Y-%m-%dT%H:%M%z",      # 2025-12-01T20:00-03:00
-            "%Y-%m-%dT%H:%M:%S%z",   # 2025-12-01T20:00:00-03:00
-            "%Y-%m-%dT%H:%M:%SZ",    # 2025-12-01T23:00:00Z
-            "%Y-%m-%dT%H:%M:%S.%fZ", # 2025-12-01T23:00:00.000Z
+            "%Y-%m-%d %H:%M",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%dT%H:%M",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%dT%H:%M%z",
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%fZ",
         ])
         super().__init__(*args, **kwargs)
 
@@ -54,11 +80,26 @@ class CoachSerializer(serializers.ModelSerializer):
         fields = ("id", "nombre", "especialidad", "email")
 
 
-# -------- Activity --------
+# -------- Activity (con contadores) --------
 class ActivitySerializer(serializers.ModelSerializer):
+    # contadores que anota la view
+    slots_count = serializers.IntegerField(read_only=True)
+    bookings_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Activity
-        fields = ("id", "nombre", "duracion", "capacidad_maxima", "cutoff_minutes", "coach", "activo")
+        fields = (
+            "id",
+            "nombre",
+            "duracion",
+            "capacidad_maxima",
+            "cutoff_minutes",
+            "coach",
+            "activo",
+            # nuevos:
+            "slots_count",
+            "bookings_count",
+        )
 
     def validate_duracion(self, v):
         if v <= 0:
@@ -72,19 +113,23 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 
 # -------- Clase Programada (Slot) --------
+# -------- Clase Programada (Slot) --------
 class ClaseProgramadaSerializer(serializers.ModelSerializer):
     inicio = LocalAwareDateTimeField()  # ← amigable
     actividad_nombre = serializers.CharField(source="actividad.nombre", read_only=True)
     sucursal_nombre  = serializers.CharField(source="sucursal.nombre", read_only=True)
     sucursal_dir     = serializers.CharField(source="sucursal.direccion", read_only=True)
     fin              = serializers.SerializerMethodField()
+    # NUEVO: cantidad de reservas (Booking) para este slot
+    reservas_count   = serializers.SerializerMethodField()
 
     class Meta:
         model  = ClaseProgramada
         fields = (
             "id", "actividad", "actividad_nombre",
             "sucursal", "sucursal_nombre", "sucursal_dir",
-            "coach", "inicio", "fin", "capacidad", "cutoff_minutes", "activo"
+            "coach", "inicio", "fin", "capacidad", "cutoff_minutes", "activo",
+            "reservas_count",           # ← NUEVO
         )
         validators = [
             UniqueTogetherValidator(
@@ -97,22 +142,21 @@ class ClaseProgramadaSerializer(serializers.ModelSerializer):
     def get_fin(self, obj):
         return obj.fin.isoformat()
 
+    def get_reservas_count(self, obj):
+        # related_name='bookings' en Booking.slot
+        return obj.bookings.count()
+
     def validate_capacidad(self, v):
         if v <= 0:
             raise serializers.ValidationError("La capacidad debe ser mayor a 0.")
         return v
 
     def validate(self, data):
-        # Por defecto, capacidad = capacidad_maxima de la actividad
-        if self.instance is None and not data.get("capacidad"):
-            data["capacidad"] = data["actividad"].capacidad_maxima
-        return data
-
-    def validate(self, data):
         """
         - No permitir programar en el pasado (create/update)
         - Si no viene 'capacidad', usar por defecto la de la actividad
         """
+        from django.utils import timezone
         # obtener el inicio de 'data' o, en update parcial, del instance
         inicio = data.get("inicio", getattr(self.instance, "inicio", None))
         if inicio and inicio <= timezone.now():
@@ -126,40 +170,16 @@ class ClaseProgramadaSerializer(serializers.ModelSerializer):
 
         return data
 
-# -------- Shift (lectura) --------
-class ShiftSerializer(serializers.ModelSerializer):
-    slot_info = ClaseProgramadaSerializer(source="slot", read_only=True)
-
-    class Meta:
-        model  = Shift
-        fields = ("id", "slot", "slot_info", "creado")
 
 
-# -------- Reservar por Slot --------
-class ReserveBySlotSerializer(serializers.Serializer):
-    slot = serializers.PrimaryKeyRelatedField(queryset=ClaseProgramada.objects.filter(activo=True))
-
-    def validate(self, data):
-        slot = data["slot"]
-        now  = timezone.now()
-        if slot.inicio <= now:
-            raise serializers.ValidationError("La clase ya inició o finalizó.")
-        cutoff_dt = slot.inicio - timedelta(minutes=slot.cutoff)
-        if now > cutoff_dt:
-            raise serializers.ValidationError(
-                f"Las inscripciones cierran {slot.cutoff} minutos antes del inicio."
-            )
-        return data
-
-from rest_framework import serializers
-from .models import ClaseProgramada, Booking
-
+# -------- Booking (reservas nuevas) --------
 class BookingSerializer(serializers.ModelSerializer):
     slot_info = serializers.SerializerMethodField()
+    user_info = serializers.SerializerMethodField()
 
     class Meta:
         model  = Booking
-        fields = ("id", "slot", "slot_info", "creado")
+        fields = ("id", "slot", "slot_info", "user_info", "creado")
 
     def get_slot_info(self, obj):
         s = obj.slot
@@ -173,5 +193,23 @@ class BookingSerializer(serializers.ModelSerializer):
             "cutoff": s.cutoff,
         }
 
+    def get_user_info(self, obj):
+        u = obj.user
+        return {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "rol": getattr(u, "rol", None),
+            "is_active": u.is_active,
+        }
+
 class ReserveBySlotBookingSerializer(serializers.Serializer):
     slot = serializers.PrimaryKeyRelatedField(queryset=ClaseProgramada.objects.filter(activo=True))
+
+class AdminReserveSerializer(serializers.Serializer):
+    user_id = serializers.PrimaryKeyRelatedField(
+        source="user", queryset=GymUser.objects.all()
+    )
+    slot = serializers.PrimaryKeyRelatedField(
+        queryset=ClaseProgramada.objects.all()
+    )

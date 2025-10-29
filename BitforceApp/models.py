@@ -73,28 +73,6 @@ class ClaseProgramada(models.Model):
     def cutoff(self):
         return self.cutoff_minutes if self.cutoff_minutes is not None else self.actividad.cutoff_minutes
 
-
-class Shift(models.Model):
-    """Reserva de un usuario sobre un slot (ClaseProgramada)."""
-    slot    = models.ForeignKey(ClaseProgramada, on_delete=models.CASCADE, related_name='reservas', null=False, blank=False)
-    gymuser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shifts')
-    creado  = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        managed = False
-        db_table = "bitforceapp_shift"
-        constraints = [
-            models.UniqueConstraint(fields=["gymuser", "slot"], name="unique_booking_per_user_per_slot_v2")
-        ]
-        indexes = [
-            models.Index(fields=["slot"]),
-            models.Index(fields=["gymuser"]),
-        ]
-        ordering = ["-creado"]
-
-    def __str__(self):
-        return f"{self.gymuser} → {self.slot}"
-
 # --- NUEVO: reservas en tabla nueva ---
 class Booking(models.Model):
     """Reserva de un usuario sobre un slot (ClaseProgramada) — TABLA NUEVA."""
