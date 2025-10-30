@@ -86,19 +86,22 @@ WSGI_APPLICATION = 'Bitforce.wsgi.application'
 # ========================
 # BASE DE DATOS
 # ========================
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'railway',  # nombre de la base en Railway
-        'USER': 'root',     # usuario root de Railway
-        'PASSWORD': 'HXSuTsHHxupcqVUhbPiUAHJaXazlMpzz',  # tu MYSQL_ROOT_PASSWORD / MYSQLPASSWORD
-        'HOST': 'yamanote.proxy.rlwy.net',  # dominio público que te da Railway
-        'PORT': '37264',    # puerto público que te da Railway
+        'NAME': os.environ.get('MYSQLDATABASE', 'railway'),
+        'USER': os.environ.get('MYSQLUSER', 'root'),
+        'PASSWORD': os.environ.get('MYSQLPASSWORD', ''),
+        'HOST': os.environ.get('MYSQLHOST', 'localhost'),
+        'PORT': os.environ.get('MYSQLPORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
-        }
+        },
     }
 }
+
 
 
 # ========================
