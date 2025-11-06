@@ -83,14 +83,25 @@ WSGI_APPLICATION = "Bitforce.wsgi.application"
 # ========================
 # BASE DE DATOS (Railway)
 # ========================
+def _get(*keys, default=None):
+    """
+    Devuelve el valor de la primera variable de entorno que exista.
+    Ej: _get("MYSQLDATABASE", "MYSQL_DATABASE", default="railway")
+    """
+    for k in keys:
+        v = os.getenv(k)
+        if v not in (None, ""):
+            return v
+    return default
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": env("MYSQLDATABASE", "MYSQL_DATABASE", default="railway"),
-        "USER": env("MYSQLUSER", "MYSQL_USER", default="root"),
-        "PASSWORD": env("MYSQLPASSWORD", "MYSQL_PASSWORD", "MYSQL_ROOT_PASSWORD", default=""),
-        "HOST": env("MYSQLHOST", "MYSQL_HOST", default="localhost"),
-        "PORT": env("MYSQLPORT", "MYSQL_PORT", default="3306"),
+        "NAME": _get("MYSQLDATABASE", "MYSQL_DATABASE", default="railway"),
+        "USER": _get("MYSQLUSER", "MYSQL_USER", default="root"),
+        "PASSWORD": _get("MYSQLPASSWORD", "MYSQL_PASSWORD", "MYSQL_ROOT_PASSWORD", default=""),
+        "HOST": _get("MYSQLHOST", "MYSQL_HOST", default="localhost"),
+        "PORT": _get("MYSQLPORT", "MYSQL_PORT", default="3306"),
         "OPTIONS": {
             "charset": "utf8mb4",
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
