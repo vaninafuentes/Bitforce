@@ -86,11 +86,11 @@ WSGI_APPLICATION = "Bitforce.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("MYSQLDATABASE", "railway"),
-        "USER": os.getenv("MYSQLUSER", "root"),
-        "PASSWORD": os.getenv("MYSQLPASSWORD", ""),
-        "HOST": os.getenv("MYSQLHOST", "localhost"),
-        "PORT": os.getenv("MYSQLPORT", "3306"),
+        "NAME": env("MYSQLDATABASE", "MYSQL_DATABASE", default="railway"),
+        "USER": env("MYSQLUSER", "MYSQL_USER", default="root"),
+        "PASSWORD": env("MYSQLPASSWORD", "MYSQL_PASSWORD", "MYSQL_ROOT_PASSWORD", default=""),
+        "HOST": env("MYSQLHOST", "MYSQL_HOST", default="localhost"),
+        "PORT": env("MYSQLPORT", "MYSQL_PORT", default="3306"),
         "OPTIONS": {
             "charset": "utf8mb4",
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
